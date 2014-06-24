@@ -1,0 +1,17 @@
+{
+    "name": "winternote",
+    "version": "0.5.1",
+    "main": ["./dist/summernote.min.js", "./dist/summernote.css"],
+    "ignore": [
+        "**/.*",
+        "*.yml",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "jquery": ">= 1.9.0",
+        "font-awesome": ">= 4.0.1"
+    }
+}
