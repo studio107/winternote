@@ -256,20 +256,25 @@
 
 .note-popover .popover {
   max-width: none;
-  .popover-content a {
-    display: inline-block;
+  .popover-content>a {
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
+    line-height: 33px;
+    float: left;
   }
   .arrow {
     left: 20px;
   }
   .popover-content {
-    padding: 0;
+    padding: 8px;
     margin: 0;
+  }
+  .note-insert.btn-group{
+    display: inline-block;
+    float: none;
   }
 }
 
@@ -559,5 +564,14 @@
     opacity: .7;
     -ms-filter: alpha(opacity = 70);
     filter: alpha(opacity = 70);
+  }
+}
+
+.note-modal-form{
+  .modal-footer{
+    margin-top: 10px;
+    .button {
+      margin-bottom: 0;
+    }
   }
 }

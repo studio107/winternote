@@ -211,18 +211,22 @@
 
 .note-popover .popover {
   max-width: none; }
-  .note-popover .popover .popover-content a {
-    display: inline-block;
+  .note-popover .popover .popover-content > a {
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    vertical-align: middle; }
+    vertical-align: middle;
+    line-height: 33px;
+    float: left; }
   .note-popover .popover .arrow {
     left: 20px; }
   .note-popover .popover .popover-content {
-    padding: 0;
+    padding: 8px;
     margin: 0; }
+  .note-popover .popover .note-insert.btn-group {
+    display: inline-block;
+    float: none; }
 
 .note-toolbar {
   padding: 0;
@@ -465,3 +469,8 @@
     opacity: 0.7;
     -ms-filter: alpha(opacity=70);
     filter: alpha(opacity=70); }
+
+.note-modal-form .modal-footer {
+  margin-top: 10px; }
+  .note-modal-form .modal-footer .button {
+    margin-bottom: 0; }

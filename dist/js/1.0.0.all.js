@@ -2141,7 +2141,7 @@
             var $linkPopover = $popover.find('.note-link-popover');
 
             if (oStyle.anchor) {
-                var $anchor = $linkPopover.find('a');
+                var $anchor = $linkPopover.find('a:lt(1)');
                 $anchor.attr('href', oStyle.anchor.href).html(oStyle.anchor.href);
                 showPopover($linkPopover, oStyle.anchor);
             } else {
@@ -2281,52 +2281,55 @@
          */
         this.showLinkDialog = function($editable, $dialog, linkInfo) {
             return $.Deferred(function(deferred) {
+
                 var $linkDialog = $dialog.find('.note-link-dialog');
 
-                var $linkText = $linkDialog.find('.note-link-text'),
-                    $linkUrl = $linkDialog.find('.note-link-url'),
-                    $linkBtn = $linkDialog.find('.note-link-btn'),
-                    $openInNewWindow = $linkDialog.find('input[type=checkbox]');
+                $linkDialog.mmodal({
+                    'onAfterOpen': function(){
+                        var $linkText = $('.mmodal-content').find('.note-link-text'),
+                            $linkUrl = $('.mmodal-content').find('.note-link-url'),
+                            $linkBtn = $('.mmodal-content').find('.note-link-btn'),
+                            $openInNewWindow = $('.mmodal-content').find('input[type=checkbox]');
 
-                $linkDialog.one('shown.bs.modal', function() {
-                    $linkText.val(linkInfo.text);
+                        $linkText.val(linkInfo.text);
 
-                    $linkText.keyup(function() {
-                        // if linktext was modified by keyup,
-                        // stop cloning text from linkUrl
-                        linkInfo.text = $linkText.val();
-                    });
+                        $linkText.keyup(function() {
+                            // if linktext was modified by keyup,
+                            // stop cloning text from linkUrl
+                            linkInfo.text = $linkText.val();
+                        });
 
-                    // if no url was given, copy text to url
-                    if (!linkInfo.url) {
-                        linkInfo.url = linkInfo.text;
-                        toggleBtn($linkBtn, linkInfo.text);
-                    }
-
-                    $linkUrl.keyup(function() {
-                        toggleBtn($linkBtn, $linkUrl.val());
-                        // display same link on `Text to display` input
-                        // when create a new link
-                        if (!linkInfo.text) {
-                            $linkText.val($linkUrl.val());
+                        // if no url was given, copy text to url
+                        if (!linkInfo.url) {
+                            linkInfo.url = linkInfo.text;
+                            toggleBtn($linkBtn, linkInfo.text);
                         }
-                    }).val(linkInfo.url).trigger('focus').trigger('select');
 
-                    $openInNewWindow.prop('checked', linkInfo.newWindow);
+                        $linkUrl.keyup(function() {
+                            toggleBtn($linkBtn, $linkUrl.val());
+                            // display same link on `Text to display` input
+                            // when create a new link
+                            if (!linkInfo.text) {
+                                $linkText.val($linkUrl.val());
+                            }
+                        }).val(linkInfo.url).trigger('focus').trigger('select');
 
-                    $linkBtn.one('click', function(event) {
-                        event.preventDefault();
+                        $openInNewWindow.prop('checked', linkInfo.newWindow);
 
-                        deferred.resolve($linkText.val(), $linkUrl.val(), $openInNewWindow.is(':checked'));
-                        $linkDialog.modal('hide');
-                    });
-                }).one('hidden.bs.modal', function() {
-                    $linkUrl.off('keyup');
+                        $linkBtn.one('click', function(event) {
+                            event.preventDefault();
 
-                    if (deferred.state() === 'pending') {
-                        deferred.reject();
+                            deferred.resolve($linkText.val(), $linkUrl.val(), $openInNewWindow.is(':checked'));
+
+                            $('.mmodal-close').click();
+                        });
+                    },
+                    'onBeforeClose': function(){
+                        if (deferred.state() === 'pending') {
+                            deferred.reject();
+                        }
                     }
-                }).modal('show');
+                });
             }).promise();
         };
 
@@ -2671,8 +2674,12 @@
         };
 
         var hToolbarAndPopoverClick = function(event) {
-            event.preventDefault();
             var $btn = $(event.target).closest('[data-event]');
+            var $toggle = $(event.target).closest('[data-toggle]');
+
+            if ($btn.length || $toggle.length){
+                event.preventDefault();
+            }
 
             if ($btn.length) {
                 var sEvent = $btn.attr('data-event'),
@@ -3067,7 +3074,6 @@
                 '<div class="arrow"></div>' +
                 '<div class="popover-content">' +
                 content +
-                '<p class="note-toolbar-clear"></p>' +
                 '</div>' +
                 '</div>';
         };
@@ -3086,7 +3092,6 @@
                 '<div class="modal-content">' +
                 (title ?
                 '<div class="modal-header">' +
-                '<button type="button" class="close" aria-hidden="true" tabindex="-1">&times;</button>' +
                 '<h4 class="modal-title">' + title + '</h4>' +
                 '</div>' : ''
             ) +
@@ -3298,14 +3303,15 @@
                     title: lang.link.edit,
                     event: 'showLinkDialog'
                 });
-                var unlinkButton = tplIconButton('fa fa-unlink icon-unlink', {
+                var unlinkButton = tplIconButton('fa fa-unlink icon-remove', {
                     title: lang.link.unlink,
                     event: 'unlink'
                 });
-                var content = '<a href="http://www.google.com" target="_blank">www.google.com</a>&nbsp;&nbsp;' +
-                    '<div class="note-insert btn-group">' +
+
+                var content = '<a href="http://www.google.com" target="_blank">www.google.com</a>&nbsp;&nbsp;<span class="note-insert btn-group">' +
                     linkButton + unlinkButton +
-                    '</div>';
+                    '</span>';
+
                 return tplPopover('note-link-popover', content);
             };
 
@@ -3497,7 +3503,7 @@
                     '</label>' +
                     '</div>' : ''
                 );
-                var footer = '<button href="#" class="btn btn-primary note-link-btn disabled" disabled>' + lang.link.insert + '</button>';
+                var footer = '<button class="button btn-primary note-link-btn disabled" disabled>' + lang.link.insert + '</button>';
                 return tplDialog('note-link-dialog', lang.link.insert, body, footer);
             };
 

@@ -12,6 +12,7 @@
     ],
     "dependencies": {
         "jquery": ">= 1.9.0",
-        "font-awesome": ">= 4.0.1"
+        "font-awesome": ">= 4.0.1",
+        "mmodal": "~1.0.0"
     }
 }
