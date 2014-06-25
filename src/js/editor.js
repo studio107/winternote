@@ -791,7 +791,7 @@
                 ['list', ['ul', 'ol']],
                 ['para', ['paragraph']],
                 ['table', ['table']],
-                ['insert', ['link', 'video', 'hr', 'upload']],
+                ['insert', ['link', 'hr', 'upload']],
                 ['view', ['fullscreen', 'codeview']],
                 ['help', ['help']]
             ],
@@ -2671,6 +2671,7 @@
         };
 
         var hToolbarAndPopoverClick = function(event) {
+            event.preventDefault();
             var $btn = $(event.target).closest('[data-event]');
 
             if ($btn.length) {
@@ -3104,7 +3105,7 @@
 
         var tplButtonInfo = {
             upload: function(lang) {
-                var button = tplIconButton('fa fa-picture-o fa-upload icon-picture', {
+                var button = tplIconButton('fa fa-picture-o fa-upload icon-image', {
                     event: 'uploadDialog',
                     title: lang.image.image
                 });
@@ -3121,6 +3122,7 @@
                 });
             },
             video: function(lang) {
+                return '';
                 return tplIconButton('fa fa-youtube-play icon-play', {
                     event: 'showVideoDialog',
                     title: lang.video.video
@@ -3194,49 +3196,49 @@
                 });
             },
             superscript: function(lang) {
-                return tplIconButton('fa fa-superscript icon-superscript', {
+                return tplIconButton('fa fa-superscript icon-uniE6EC', {
                     event: 'superscript',
                     title: lang.font.superscript
                 });
             },
             subscript: function(lang) {
-                return tplIconButton('fa fa-subscript icon-subscript', {
+                return tplIconButton('fa fa-subscript icon-uniE6ED', {
                     event: 'subscript',
                     title: lang.font.subscript
                 });
             },
             clear: function(lang) {
-                return tplIconButton('fa fa-eraser icon-eraser', {
+                return tplIconButton('fa fa-eraser icon-erase', {
                     event: 'removeFormat',
                     title: lang.font.clear
                 });
             },
             ul: function(lang) {
-                return tplIconButton('fa fa-list-ul icon-list-ul', {
+                return tplIconButton('fa fa-list-ul icon-list3', {
                     event: 'insertUnorderedList',
                     title: lang.lists.unordered
                 });
             },
             ol: function(lang) {
-                return tplIconButton('fa fa-list-ol icon-list-ol', {
+                return tplIconButton('fa fa-list-ol icon-numbered-list', {
                     event: 'insertOrderedList',
                     title: lang.lists.ordered
                 });
             },
             paragraph: function(lang) {
-                var leftButton = tplIconButton('fa fa-align-left icon-align-left', {
+                var leftButton = tplIconButton('fa fa-align-left icon-paragraph-left', {
                     title: lang.paragraph.left,
                     event: 'justifyLeft'
                 });
-                var centerButton = tplIconButton('fa fa-align-center icon-align-center', {
+                var centerButton = tplIconButton('fa fa-align-center icon-paragraph-center', {
                     title: lang.paragraph.center,
                     event: 'justifyCenter'
                 });
-                var rightButton = tplIconButton('fa fa-align-right icon-align-right', {
+                var rightButton = tplIconButton('fa fa-align-right icon-paragraph-right', {
                     title: lang.paragraph.right,
                     event: 'justifyRight'
                 });
-                var justifyButton = tplIconButton('fa fa-align-justify icon-align-justify', {
+                var justifyButton = tplIconButton('fa fa-align-justify icon-paragraph-justify', {
                     title: lang.paragraph.justify,
                     event: 'justifyFull'
                 });
@@ -3253,19 +3255,19 @@
                 return leftButton + centerButton + rightButton + justifyButton;
             },
             help: function(lang) {
-                return tplIconButton('fa fa-question icon-question', {
+                return tplIconButton('fa fa-question icon-question-circle', {
                     event: 'showHelpDialog',
                     title: lang.options.help
                 });
             },
             fullscreen: function(lang) {
-                return tplIconButton('fa fa-arrows-alt icon-fullscreen', {
+                return tplIconButton('fa fa-arrows-alt icon-maximize', {
                     event: 'fullscreen',
                     title: lang.options.fullscreen
                 });
             },
             codeview: function(lang) {
-                return tplIconButton('fa fa-code icon-code', {
+                return tplIconButton('fa fa-code icon-code2', {
                     event: 'codeview',
                     title: lang.options.codeview
                 });
@@ -3283,7 +3285,7 @@
                 });
             },
             hr: function(lang) {
-                return tplIconButton('fa fa-minus icon-hr', {
+                return tplIconButton('fa fa-minus icon-minus', {
                     event: 'insertHorizontalRule',
                     title: lang.hr.insert
                 });
