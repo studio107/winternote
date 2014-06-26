@@ -474,3 +474,10 @@
   margin-top: 10px; }
   .note-modal-form .modal-footer .button {
     margin-bottom: 0; }
+
+.note-image-popover .popover-content .btn-group {
+  display: inline-block;
+  float: none; }
+  .note-image-popover .popover-content .btn-group a {
+    display: inline-block;
+    float: none; }
