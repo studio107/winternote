@@ -1,10 +1,10 @@
 {
-  "name": "Summernote",
-  "description": "Super Simple WYSIWYG Editor on Bootstrap",
+  "name": "Wummernote",
+  "description": "Super Simple WYSIWYG Editor",
   "version": "0.5.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HackerWins/summernote.git"
+    "url": "https://github.com/studio107/winternote"
   },
   "author": {
     "name": "Hackerwins",

@@ -1,11 +1,11 @@
 {
-    "name": "HackerWins/summernote",
-    "description": "Super Simple WYSIWYG Editor on Bootstrap(3.0 and 2.x).",
+    "name": "studio107/winternote",
+    "description": "Super Simple WYSIWYG Editor",
     "type": "library",
     "keywords": [
         "wysiwyg"
     ],
-    "homepage": "http://hackerwins.github.io/summernote/",
+    "homepage": "https://github.com/studio107/winternote",
     "license": "MIT",
     "authors": [
         {
@@ -15,6 +15,6 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/HackerWins/summernote/issues"
+        "issues": "https://github.com/studio107/winternote"
     }
 }

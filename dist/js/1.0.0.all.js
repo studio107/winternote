@@ -775,7 +775,8 @@
 
             codemirror: { // codemirror options
                 mode: 'text/html',
-                lineNumbers: true
+                lineNumbers: true,
+                theme: 'monokai'
             },
 
             // language
@@ -1854,7 +1855,7 @@
                 } else {
                     $img.removeAttr('alt');
                 }
-                
+
                 // Margins
                 css['margin-right'] = sMRight;
                 css['margin-left'] = sMLeft;
@@ -1880,7 +1881,7 @@
                 var elAnchor = dom.ancestor(rng.sc, dom.isAnchor);
                 rng = range.createFromNode(elAnchor);
                 bNewWindow = $(elAnchor).attr('target') === '_blank';
-                sUrl = elAnchor.href;
+                sUrl = $(elAnchor).attr('href');
             }
 
             return {
@@ -2219,7 +2220,8 @@
 
             if (oStyle.anchor) {
                 var $anchor = $linkPopover.find('a:lt(1)');
-                $anchor.attr('href', oStyle.anchor.href).html(oStyle.anchor.href);
+                var href = $(oStyle.anchor).attr('href');
+                $anchor.attr('href', href).html(href);
                 showPopover($linkPopover, oStyle.anchor);
             } else {
                 $linkPopover.hide();
@@ -2271,10 +2273,11 @@
 
             var $selection = $handle.find('.note-control-selection');
 
+            $editable.find('img').removeClass('editing');
+
             if (oStyle.image) {
                 var $image = $(oStyle.image);
                 var pos = $image.position();
-
                 $image.addClass('editing');
                 // include margin
                 var szImage = {
@@ -2292,7 +2295,6 @@
                 var sSizing = szImage.w + 'x' + szImage.h;
                 $selection.find('.note-control-selection-info').text(sSizing);
             } else {
-                $editable.find('img').removeClass('editing');
                 $selection.hide();
             }
         };
