@@ -1653,14 +1653,29 @@
          * @param {jQuery} $editable
          * @param {String} sUrl
          */
-        this.insertImage = function ($editable, sUrl) {
-            recordUndo($editable);
-            var $image = $("<img src='" + sUrl + "' />");
-            $image.css({
-                display: ''
-                // width: Math.min($editable.width(), $image.width())
-            });
-            range.create().insertNode($image[0]);
+        this.insertFile = function ($editable, sUrl) {
+            $editable.focus();
+            var extension = sUrl.substr((~-sUrl.lastIndexOf(".") >>> 0) + 2);
+
+            extension = extension.toLowerCase();
+
+            var imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            if ($.inArray(extension, imageExtensions) != -1){
+
+                console.log($.inArray(extension, imageExtensions));
+
+                recordUndo($editable);
+                var $image = $("<img src='" + sUrl + "' />");
+                $image.css({
+                    display: ''
+                });
+                range.create().insertNode($image[0]);
+            }else{
+                var parts = sUrl.split( '/' );
+                var sText = parts[parts.length-1];
+                this.createLink($editable, sText, sUrl, true);
+            }
+
         };
 
         /**
@@ -1789,6 +1804,7 @@
          * create link
          *
          * @param {jQuery} $editable
+         * @param {String} sLinkText
          * @param {String} sLinkUrl
          * @param {Boolean} bNewWindow
          */
@@ -1812,7 +1828,7 @@
                     rng = range.createFromNode($anchor[0]);
                     rng.select();
                 } else {
-                    document.execCommand('createlink', false, sLinkUrlWithProtocol);
+                    document.execCommand("insertHTML",false,"<a href='"+sLinkUrlWithProtocol+"'>"+sLinkText+"</a>");
                 }
             }
 
@@ -1845,7 +1861,7 @@
             recordUndo($editable);
 
             // Edit image tags
-            if (imageInfo.img){
+            if (imageInfo.img) {
                 var $img = imageInfo.img,
                     css = {};
 
@@ -2499,6 +2515,7 @@
             popover = new Popover();
         var handle = new Handle(),
             dialog = new Dialog();
+//        var r = new Flow(options.flowOptions);
 
         /**
          * returns makeLayoutInfo from editor's descendant node.
@@ -2562,25 +2579,7 @@
             },
 
             uploadDialog: function (oLayoutInfo) {
-                var $target = $("#note-upload");
-
-                var $editor = oLayoutInfo.editor(),
-                    $editable = oLayoutInfo.editable(),
-                    options = $editor.data('options');
-
-                var r = new Flow(options.flowOptions);
-                r.assignBrowse($target[0]);
-                r.on("fileError", function (file, message) {
-                    // console.log(file, message);
-                });
-                r.on("filesSubmitted", function (file) {
-                    r.upload();
-                });
-                r.on("fileSuccess", function (file, message) {
-                    editor.insertImage($editable, message);
-                });
-
-                $target.click();
+                $("#note-upload").click();
             },
 
             /**
@@ -2946,21 +2945,19 @@
          */
         var insertImages = function ($editable, files) {
             editor.restoreRange($editable);
+            var oLayoutInfo = makeLayoutInfo($editable[0]);
             var callbacks = $editable.data('callbacks');
 
             // If onImageUpload options setted
             if (callbacks.onImageUpload) {
                 callbacks.onImageUpload(files, editor, $editable);
-                // else insert Image as dataURL
             } else {
+                var $editor = oLayoutInfo.editor(),
+                    options = $editor.data('options'),
+                    flow = $editor.data('Flow');
+
                 $.each(files, function (idx, file) {
-                    async.readFileAsDataURL(file).then(function (sDataURL) {
-                        editor.insertImage($editable, sDataURL);
-                    }).fail(function () {
-                        if (callbacks.onImageUploadError) {
-                            callbacks.onImageUploadError();
-                        }
-                    });
+                    flow.addFile(file);
                 });
             }
         };
@@ -3065,6 +3062,30 @@
             });
         };
 
+        this.init = function (oLayoutInfo, options) {
+            this.initFlow(oLayoutInfo, options);
+            this.attach(oLayoutInfo, options);
+        };
+
+        this.initFlow = function (oLayoutInfo, options) {
+            var flow = new Flow(options.flowOptions),
+                $editable = oLayoutInfo.editable,
+                $target = $("#note-upload");
+
+            flow.assignBrowse($target[0]);
+
+            flow.on("fileError", function (file, message) {
+                // console.log(file, message);
+            });
+            flow.on("filesSubmitted", function (file) {
+                flow.upload();
+            });
+            flow.on("fileSuccess", function (file, message) {
+                editor.insertFile($editable, message);
+            });
+
+            oLayoutInfo.editor.data('Flow', flow);
+        };
         /**
          * attach eventhandler
          *
@@ -3973,7 +3994,7 @@
                 renderer.createLayout($holder, options);
 
                 var info = renderer.layoutInfoFromHolder($holder);
-                eventHandler.attach(info, options);
+                eventHandler.init(info, options);
 
                 // Textarea: auto filling the code before form submit.
                 if (dom.isTextarea($holder[0])) {
