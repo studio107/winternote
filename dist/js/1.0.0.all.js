@@ -937,7 +937,13 @@
                     providers: '(YouTube, Vimeo, Vine, Instagram, or DailyMotion)'
                 },
                 table: {
-                    table: 'Table'
+                    table: 'Table',
+                    addRowAfter: 'Add row after',
+                    addRowBefore: 'Add row before',
+                    addColumnAfter: 'Add column after',
+                    addColumnBefore: 'Add column before',
+                    removeColumn: 'Remove column',
+                    removeRow: 'Remove row'
                 },
                 hr: {
                     insert: 'Insert Horizontal Rule'
@@ -2030,6 +2036,7 @@
             recordUndo($editable);
             $target.detach();
         };
+
     };
 
     /**
@@ -2718,6 +2725,67 @@
                 }
 
                 toolbar.updateCodeview(oLayoutInfo.toolbar(), bCodeview);
+            },
+
+            addRowAfter: function ($cell){
+                var $row = $cell.parent();
+                var $clone = $row.clone();
+                $clone.find('td').html('<br>').removeAttr('style');
+                $row.after($clone);
+            },
+            addRowBefore: function ($cell){
+                var $row = $cell.parent();
+                var $clone = $row.clone();
+                $clone.find('td').html('<br>').removeAttr('style');
+                $row.before($clone);
+            },
+            removeRow: function ($cell){
+                $cell.parent().remove();
+            },
+            addColumnAfter: function ($cell){
+                var $table = $cell.closest('table');
+                var index = $cell.index();
+                $table.find('tr').each(function(){
+                    $(this).find('td').eq(index).after($cell.clone().html('<br>').removeAttr('style'));
+                });
+            },
+            addColumnBefore: function ($cell){
+                var $table = $cell.closest('table');
+                var index = $cell.index();
+                $table.find('tr').each(function(){
+                    $(this).find('td').eq(index).before($cell.clone().html('<br>').removeAttr('style'));
+                });
+            },
+            removeColumn: function ($cell){
+                var $table = $cell.closest('table');
+                var index = $cell.index();
+                $table.find('tr').each(function(){
+                    console.log()
+                    $(this).find('td').eq(index).remove();
+                });
+            },
+            showTableMenu: function($cell, x, y){
+                var oLayoutInfo = makeLayoutInfo($cell);
+                var $editor = oLayoutInfo.editor();
+                var options = $editor.data('options');
+                var langInfo = $.summernote.lang[options.lang];
+
+                var menu = $('<ul></ul>').addClass('f-dropdown').addClass('editor-menu');
+                menu.append('<li><a data-event="addRowAfter">' + langInfo.table.addRowAfter + '</a></li>');
+                menu.append('<li><a data-event="addRowBefore">' + langInfo.table.addRowBefore + '</a></li>');
+                menu.append('<li><a data-event="addColumnAfter">' + langInfo.table.addColumnAfter + '</a></li>');
+                menu.append('<li><a data-event="addColumnBefore">' + langInfo.table.addColumnBefore + '</a></li>');
+                menu.append('<li><a data-event="removeColumn">' + langInfo.table.removeColumn + '</a></li>');
+                menu.append('<li><a data-event="removeRow">' + langInfo.table.removeRow + '</a></li>');
+
+                menu.css({
+                    'left': x,
+                    'top': y
+                })
+                $('body').append(menu);
+            },
+            hideTableMenu: function(){
+                $('.editor-menu').remove();
             }
         };
 
@@ -2726,6 +2794,91 @@
             if (dom.isImg(event.target)) {
                 event.preventDefault();
             }
+        };
+
+        var MouseMoveCell = function (event) {
+            var $cell = $(event.target);
+            if (!$cell.hasClass('resizing') && $cell.parent().index() == 0){
+                var margin = 8;
+                var width = $cell.outerWidth();
+                var offset_left = $cell.offset().left;
+                var offset_right = $cell.offset().left + width;
+
+                var mouse = event.pageX;
+                if ((mouse >= offset_left && mouse <= offset_left+margin) || (mouse >= offset_right-margin && mouse <= offset_right))
+                {
+                    $cell.data('resize', (mouse >= offset_left && mouse <= offset_left+margin) ? 'left' : 'right' );
+                    $cell.addClass('resize-me');
+                    $cell.css({
+                        'cursor': 'col-resize'
+                    });
+                }else{
+                    $cell.removeClass('resize-me');
+                    $cell.css({
+                        'cursor': ''
+                    });
+                }
+            }
+        };
+
+        var MouseDownCell = function (event) {
+            var $cell = $(event.target);
+            var mouse_start = event.pageX;
+            var width_start = $cell.outerWidth();
+
+            if ($cell.hasClass('resize-me')){
+                $cell.addClass('resizing');
+                var resize = $cell.data('resize');
+                $(document).on('mousemove', function(event){
+                    var mouse_now = event.pageX;
+
+                    var delta = mouse_now - mouse_start;
+                    if (resize == 'left'){
+                        delta = mouse_start - mouse_now;
+                    }
+
+                    $cell.css('width', width_start + delta);
+                }).one('mouseup', function(event){
+                    $cell.removeClass('resizing');
+                    $(document).off('mousemove');
+                });
+            }
+        };
+
+        var ContextMenuCell = function(event) {
+            var $cell = $(event.target).closest('td');
+            event.preventDefault();
+            if (event.stopPropagation)
+                event.stopPropagation();
+
+            var me = this;
+            commands.showTableMenu($cell, event.pageX, event.pageY);
+            $(document).on('click', function(event){
+                var menu = $(event.target).closest('.editor-menu');
+                if (menu.length) {
+                    var link = $(event.target).closest('a');
+                    if (link.length) {
+                        if (link.data('event')) {
+                            commands[link.data('event')].call(me, $cell);
+                            commands.hideTableMenu();
+                            $(document).off('click');
+                        }
+                    }
+                }else{
+                    commands.hideTableMenu();
+                    $(document).off('click');
+                }
+            });
+            event.cancelBubble = true;
+            return false;
+        };
+
+        var MouseOutCell = function (event) {
+            var $cell = $(event.target);
+            $cell.removeClass('resize-me');
+            $cell.css({
+                'cursor': ''
+            });
         };
 
         var hToolbarAndPopoverUpdate = function (event) {
@@ -3096,6 +3249,12 @@
         this.attach = function (oLayoutInfo, options) {
             // handlers for editable
             this.bindKeyMap(oLayoutInfo, options.keyMap[agent.bMac ? 'mac' : 'pc']);
+            oLayoutInfo.editable.on('mousemove', 'td', MouseMoveCell);
+            oLayoutInfo.editable.on('mouseout', 'td', MouseOutCell);
+            oLayoutInfo.editable.on('mousedown', 'td', MouseDownCell);
+            oLayoutInfo.editable.on('contextmenu', 'td', ContextMenuCell);
+
+
             oLayoutInfo.editable.on('mousedown', hMousedown);
             oLayoutInfo.editable.on('keyup mouseup', hToolbarAndPopoverUpdate);
             oLayoutInfo.editable.on('scroll', hScroll);
@@ -4074,3 +4233,146 @@
         }
     });
 }));
+
+
+/*
+ * Context.js
+ * Copyright Jacob Kelley
+ * MIT License
+ */
+
+var context = context || (function () {
+
+    var options = {
+        fadeSpeed: 100,
+        filter: function ($obj) {
+            // Modify $obj, Do not return
+        },
+        above: 'auto',
+        preventDoubleContext: true,
+        compress: false
+    };
+
+    function initialize(opts) {
+
+        options = $.extend({}, options, opts);
+
+        $(document).on('click', 'html', function () {
+            $('.dropdown-context').fadeOut(options.fadeSpeed, function(){
+                $('.dropdown-context').css({display:''}).find('.drop-left').removeClass('drop-left');
+            });
+        });
+        if(options.preventDoubleContext){
+            $(document).on('contextmenu', '.dropdown-context', function (e) {
+                e.preventDefault();
+            });
+        }
+        $(document).on('mouseenter', '.dropdown-submenu', function(){
+            var $sub = $(this).find('.dropdown-context-sub:first'),
+                subWidth = $sub.width(),
+                subLeft = $sub.offset().left,
+                collision = (subWidth+subLeft) > window.innerWidth;
+            if(collision){
+                $sub.addClass('drop-left');
+            }
+        });
+
+    }
+
+    function updateOptions(opts){
+        options = $.extend({}, options, opts);
+    }
+
+    function buildMenu(data, id, subMenu) {
+        var subClass = (subMenu) ? ' dropdown-context-sub' : '',
+            compressed = options.compress ? ' compressed-context' : '',
+            $menu = $('<ul class="dropdown-menu dropdown-context' + subClass + compressed+'" id="dropdown-' + id + '"></ul>');
+        var i = 0, linkTarget = '';
+        for(i; i<data.length; i++) {
+            if (typeof data[i].divider !== 'undefined') {
+                $menu.append('<li class="divider"></li>');
+            } else if (typeof data[i].header !== 'undefined') {
+                $menu.append('<li class="nav-header">' + data[i].header + '</li>');
+            } else {
+                if (typeof data[i].href == 'undefined') {
+                    data[i].href = '#';
+                }
+                if (typeof data[i].target !== 'undefined') {
+                    linkTarget = ' target="'+data[i].target+'"';
+                }
+                if (typeof data[i].subMenu !== 'undefined') {
+                    $sub = ('<li class="dropdown-submenu"><a tabindex="-1" href="' + data[i].href + '">' + data[i].text + '</a></li>');
+                } else {
+                    $sub = $('<li><a tabindex="-1" href="' + data[i].href + '"'+linkTarget+'>' + data[i].text + '</a></li>');
+                }
+                if (typeof data[i].action !== 'undefined') {
+                    var actiond = new Date(),
+                        actionID = 'event-' + actiond.getTime() * Math.floor(Math.random()*100000),
+                        eventAction = data[i].action;
+                    $sub.find('a').attr('id', actionID);
+                    $('#' + actionID).addClass('context-event');
+                    $(document).on('click', '#' + actionID, eventAction);
+                }
+                $menu.append($sub);
+                if (typeof data[i].subMenu != 'undefined') {
+                    var subMenuData = buildMenu(data[i].subMenu, id, true);
+                    $menu.find('li:last').append(subMenuData);
+                }
+            }
+            if (typeof options.filter == 'function') {
+                options.filter($menu.find('li:last'));
+            }
+        }
+        return $menu;
+    }
+
+    function addContext(selector, data) {
+
+        var d = new Date(),
+            id = d.getTime(),
+            $menu = buildMenu(data, id);
+
+        $('body').append($menu);
+
+
+        $(document).on('contextmenu', selector, function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $('.dropdown-context:not(.dropdown-context-sub)').hide();
+
+            $dd = $('#dropdown-' + id);
+            if (typeof options.above == 'boolean' && options.above) {
+                $dd.addClass('dropdown-context-up').css({
+                    top: e.pageY - 20 - $('#dropdown-' + id).height(),
+                    left: e.pageX - 13
+                }).fadeIn(options.fadeSpeed);
+            } else if (typeof options.above == 'string' && options.above == 'auto') {
+                $dd.removeClass('dropdown-context-up');
+                var autoH = $dd.height() + 12;
+                if ((e.pageY + autoH) > $('html').height()) {
+                    $dd.addClass('dropdown-context-up').css({
+                        top: e.pageY - 20 - autoH,
+                        left: e.pageX - 13
+                    }).fadeIn(options.fadeSpeed);
+                } else {
+                    $dd.css({
+                        top: e.pageY + 10,
+                        left: e.pageX - 13
+                    }).fadeIn(options.fadeSpeed);
+                }
+            }
+        });
+    }
+
+    function destroyContext(selector) {
+        $(document).off('contextmenu', selector).off('click', '.context-event');
+    }
+
+    return {
+        init: initialize,
+        settings: updateOptions,
+        attach: addContext,
+        destroy: destroyContext
+    };
+})();
