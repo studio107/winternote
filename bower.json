@@ -1,6 +1,6 @@
 {
     "name": "mwysiwyg",
-    "version": "0.1",
+    "version": "1.0",
     "main": ["./dist/summernote.min.js", "./dist/summernote.css"],
     "ignore": [
         "**/.*",
