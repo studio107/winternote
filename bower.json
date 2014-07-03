@@ -1,6 +1,6 @@
 {
-    "name": "winternote",
-    "version": "0.5.1",
+    "name": "mwysiwyg",
+    "version": "0.1",
     "main": ["./dist/summernote.min.js", "./dist/summernote.css"],
     "ignore": [
         "**/.*",
